@@ -50,11 +50,7 @@ export default function App() {
       const snapshot = await getDocs(collectionRef);
       const entries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setData(entries);
-      if (entries.length > 0) {
-        setNewEntry(Object.fromEntries(Object.keys(entries[0]).filter(k => k !== "id").map(k => [k, ""])));
-      } else {
-        setNewEntry(defaultFields);
-      }
+      setNewEntry(defaultFields);
     };
     fetchData();
   }, []);
