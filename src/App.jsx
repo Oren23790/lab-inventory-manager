@@ -215,6 +215,18 @@ export default function App() {
         purchases.map(({ id, ...data }) => data)
       );
       
+      const handleDownloadTemplate = () => {
+        try {
+          const ws = XLSX.utils.json_to_sheet(excelTemplate);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Template");
+          XLSX.writeFile(wb, "purchase_import_template.xlsx");
+        } catch (error) {
+          console.error("Error downloading template:", error);
+          alert("Failed to download template");
+        }
+      };
+
       // Create workbook and add worksheet
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Purchases");
@@ -488,6 +500,10 @@ export default function App() {
             <button onClick={handleExport} style={{ ...buttonStyle("#343a40"), height: "fit-content", marginTop: "auto" }}>
               Export to Excel
             </button>
+            <button onClick={handleDownloadTemplate} style={{ ...buttonStyle("#17a2b8"), height: "fit-content", marginTop: "auto" }}>
+              Download Template
+            </button>
+
           </div>
           
           <div>
@@ -619,3 +635,25 @@ const tdStyle = {
   borderBottom: "1px solid #e0e0e0",
   fontSize: "0.875rem"
 };
+
+const excelTemplate = [
+  {
+    "Date Ordered": "2025-04-07",
+    "Ordered By": "AB",
+    "Cost centre": "HH",
+    "Offer nr.": "12345",
+    "PR#": "PR548377",
+    "Category": "Chemicals",
+    "Vendor": "Sigma",
+    "Item": "Ethanol",
+    "Cat. #": "E7023",
+    "Qty": 2,
+    "Unit Cost": 25.50,
+    "Total Cost": 51.00,
+    "Date Recvd": "2025-04-10",
+    "Recvd by": "CD",
+    "Location": "Lab A",
+    "Hazardous": true,
+    "Comments": "For RNA work"
+  }
+];
