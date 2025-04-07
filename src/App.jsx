@@ -13,7 +13,13 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-  // ... your Firebase config
+  apiKey: "AIzaSyB0QccZQckEz9pZfeNCZRgquJYacCsO1AE",
+  authDomain: "lab-inventory-65591.firebaseapp.com",
+  projectId: "lab-inventory-65591",
+  storageBucket: "lab-inventory-65591.firebasestorage.app",
+  messagingSenderId: "968489471672",
+  appId: "1:968489471672:web:34051082644f136a946e4d",
+  measurementId: "G-YT4YLKQK69"
 };
 
 const app = initializeApp(firebaseConfig);
