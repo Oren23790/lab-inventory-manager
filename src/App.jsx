@@ -215,6 +215,7 @@ export default function App() {
         purchases.map(({ id, ...data }) => data)
       );
       
+      
       const handleDownloadTemplate = () => {
         try {
           const ws = XLSX.utils.json_to_sheet(excelTemplate);
@@ -225,19 +226,7 @@ export default function App() {
           console.error("Error downloading template:", error);
           alert("Failed to download template");
         }
-      };
-
-      // Create workbook and add worksheet
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Purchases");
-      
-      // Generate Excel file and download
-      XLSX.writeFile(wb, "purchases_export.xlsx");
-    } catch (error) {
-      console.error("Error exporting data:", error);
-      alert("Failed to export data");
-    }
-  };
+      };   
 
   // Format currency value
   const formatCurrency = (value) => {
