@@ -1,10 +1,8 @@
-// ... the beginning of your code remains unchanged
-
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import saveAs from "file-saver";
 import * as XLSX from "xlsx";
-import { initializeApp } from "firebase/app";
 import {
+  initializeApp,
   getFirestore,
   collection,
   getDocs,
@@ -23,49 +21,82 @@ const db = getFirestore(app);
 const collectionRef = collection(db, "labInventory");
 
 const defaultFields = {
-  name: "",
-  quantity: "",
-  location: "",
-  date: new Date().toISOString().split("T")[0],
+  Date: new Date().toISOString().split("T")[0],
+  OrderedBy: "",
+  CostCentre: "",
+  OfferNr: "",
+  Nr: "",
+  Category: "",
+  Vendor: "",
+  Item: "",
+  CatNr: "",
+  Qty: 1,
+  UnitCost: 0,
+  TotalCost: 0,
+  DateRecvd: "",
+  RecvdBy: "",
+  Location: "",
+  Hazardous: false,
+  Comments: "",
+  Leibniz: "",
+  Maxima: "",
+  HH2: "",
+  DevCAR: "",
+  Spenden: "",
+  "PW-EniBHK": "",
+  Mice: "",
 };
 
-export default function App() {
+const App = () => {
   const [data, setData] = useState([]);
   const [newEntry, setNewEntry] = useState(defaultFields);
-  const [search, setSearch] = useState("");
   const [editId, setEditId] = useState(null);
   const [importPreview, setImportPreview] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const snapshot = await getDocs(collectionRef);
-      const entries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setData(entries);
-      if (entries.length > 0) {
-        setNewEntry(Object.fromEntries(Object.keys(entries[0]).filter(k => k !== "id").map(k => [k, ""])));
-      } else {
-        setNewEntry(defaultFields);
-      }
-    };
     fetchData();
   }, []);
 
-  const handleChange = (key, value) => setNewEntry({ ...newEntry, [key]: value });
+  const fetchData = async () => {
+    try {
+      const snapshot = await getDocs(collectionRef);
+      const entries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setData(entries);
+      setNewEntry(entries.length > 0
+        ? Object.fromEntries(Object.keys(entries[0]).filter(k => k !== "id").map(k => [k, ""]))
+        : defaultFields);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      alert("Failed to fetch data. Please check the console.");
+    }
+  };
+
+  const handleChange = (key, value) => {
+    if (key === "Qty" || key === "UnitCost") {
+      value = parseFloat(value);
+      const totalCost = (newEntry.Qty || (editId ? newEntry.Qty : 1)) * (newEntry.UnitCost || (editId ? newEntry.UnitCost : 0));
+      setNewEntry({ ...newEntry, [key]: value, TotalCost: totalCost });
+    } else {
+      setNewEntry({ ...newEntry, [key]: value });
+    }
+  };
 
   const handleAdd = async () => {
-    if (editId) {
-      const entryRef = doc(db, "labInventory", editId);
-      await updateDoc(entryRef, newEntry);
-      alert("✅ Entry updated!");
-    } else {
-      await addDoc(collectionRef, newEntry);
-      alert("✅ Entry added!");
+    try {
+      if (editId) {
+        await updateDoc(doc(db, "labInventory", editId), newEntry);
+        alert("✅ Entry updated!");
+      } else {
+        await addDoc(collectionRef, newEntry);
+        alert("✅ Entry added!");
+      }
+      await fetchData();
+      setNewEntry({ ...defaultFields, Date: new Date().toISOString().split("T")[0] });
+      setEditId(null);
+    } catch (error) {
+      console.error("Error adding/updating entry:", error);
+      alert("Failed to add/update entry. Please check the console.");
     }
-    const snapshot = await getDocs(collectionRef);
-    const entries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    setData(entries);
-    setNewEntry({ ...defaultFields, date: new Date().toISOString().split("T")[0] });
-    setEditId(null);
   };
 
   const handleEdit = (entry) => {
@@ -74,45 +105,77 @@ export default function App() {
   };
 
   const handleDelete = async (id) => {
-    await deleteDoc(doc(db, "labInventory", id));
-    setData(data.filter((entry) => entry.id !== id));
+    try {
+      await deleteDoc(doc(db, "labInventory", id));
+      setData(data.filter((entry) => entry.id !== id));
+      alert("✅ Entry deleted!");
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+      alert("Failed to delete entry. Please check the console.");
+    }
   };
 
-  const mapColumns = (row) => {
-    return {
-      name: row["Item"] || row["Name"] || row["Product"] || "Unnamed",
-      quantity: row["Qty"] || row["Quantity"] || 1,
-      location: row["Location"] || "",
-      date: row["Date"] || new Date().toISOString().split("T")[0],
-    };
-  };
+  const mapColumns = (row) => ({
+    Date: row["Date"] || new Date().toISOString().split("T")[0],
+    OrderedBy: row["Ordered By"] || "",
+    CostCentre: row["Cost centre"] || "",
+    OfferNr: row["Offer nr."] || "",
+    Nr: row["Nr."] || "",
+    Category: row["Category"] || "",
+    Vendor: row["Vendor"] || "",
+    Item: row["Item"] || "",
+    CatNr: row["Cat. #"] || "",
+    Qty: row["Qty"] || 1,
+    UnitCost: row["Unit Cost"] || 0,
+    TotalCost: row["Total Cost"] || 0,
+    DateRecvd: row["Date Recvd"] || "",
+    RecvdBy: row["Recvd by"] || "",
+    Location: row["Location"] || "",
+    Hazardous: row["Hazardous"] || false,
+    Comments: row["Comments"] || "",
+    Leibniz: row["Leibniz"] || "",
+    Maxima: row["Maxima"] || "",
+    HH2: row["HH2"] || "",
+    DevCAR: row["DevCAR"] || "",
+    Spenden: row["Spenden"] || "",
+    "PW-EniBHK": row["PW-EniBHK"] || "",
+    Mice: row["Mice"] || "",
+  });
 
   const handleImportExcel = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
-      const bstr = evt.target.result;
-      const wb = XLSX.read(bstr, { type: "binary" });
-      const wsname = wb.SheetNames[0];
-      const ws = wb.Sheets[wsname];
-      const rawData = XLSX.utils.sheet_to_json(ws);
-      const filtered = rawData.filter(row => row["Item"] || row["Name"]);
-      const mappedData = filtered.map(mapColumns);
-      setImportPreview(mappedData);
-    };
-    reader.readAsBinaryString(file);
+    try {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: "binary" });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const rawData = XLSX.utils.sheet_to_json(ws);
+        const filtered = rawData.filter((row) => row["Item"] || row["Name"]);
+        const mappedData = filtered.map(mapColumns);
+        setImportPreview(mappedData);
+      };
+      reader.readAsBinaryString(file);
+    } catch (error) {
+      console.error("Error importing Excel file:", error);
+      alert("Failed to import Excel file. Please check the console.");
+    }
   };
 
   const handleConfirmImport = async () => {
-    for (const row of importPreview) {
-      await addDoc(collectionRef, row);
+    try {
+      for (const row of importPreview) {
+        await addDoc(collectionRef, row);
+      }
+      alert("✅ Purchases imported!");
+      await fetchData();
+      setImportPreview([]);
+    } catch (error) {
+      console.error("Error confirming import:", error);
+      alert("Failed to import data. Please check the console.");
     }
-    alert("✅ Purchases imported!");
-    const snapshot = await getDocs(collectionRef);
-    const entries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    setData(entries);
-    setImportPreview([]);
   };
 
   const handleExport = () => {
@@ -122,61 +185,65 @@ export default function App() {
   };
 
   return (
-    <div style={{ padding: 32, fontFamily: "Arial, sans-serif", background: "#f9f9fb", minHeight: "100vh" }}>
-      <div style={{ maxWidth: 800, margin: "0 auto", background: "#fff", padding: 32, borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-        <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 24 }}>🧪 Lab Inventory Manager</h1>
-
-        <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-          <input placeholder="Name" value={newEntry.name} onChange={(e) => handleChange("name", e.target.value)} style={inputStyle} />
-          <input placeholder="Quantity" type="number" value={newEntry.quantity} onChange={(e) => handleChange("quantity", e.target.value)} style={inputStyle} />
-          <input placeholder="Location" value={newEntry.location} onChange={(e) => handleChange("location", e.target.value)} style={inputStyle} />
-          <input type="date" value={newEntry.date} onChange={(e) => handleChange("date", e.target.value)} style={inputStyle} />
+    <div style={containerStyle}>
+      <div style={cardStyle}>
+        <h1 style={headingStyle}> Lab Inventory Manager</h1>
+        <div style={formGridStyle}>
+          {Object.entries(newEntry).map(([key, value]) => (
+            <input
+              key={key}
+              placeholder={key}
+              type={key === "Date" || key === "DateRecvd" ? "date" : key === "Qty" || key === "UnitCost" || key === "TotalCost" ? "number" : "text"}
+              value={key === "UnitCost" || key === "TotalCost" ? value.toFixed(2) : value}
+              onChange={(e) => handleChange(key, e.target.value)}
+              style={inputStyle}
+            />
+          ))}
         </div>
-
-        <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={handleAdd} style={buttonStyle("#28a745")}>
+        <div style={buttonContainerStyle}>
+          <button onClick={handleAdd} style={buttonStyle(editId ? "#28a745" : "#007bff")}>
             {editId ? "✅ Update Entry" : "➕ Add Entry"}
           </button>
         </div>
-
-        <hr style={{ margin: "32px 0" }} />
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <hr style={dividerStyle} />
+        <div style={importExportContainerStyle}>
           <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} style={inputStyle} />
-
           {importPreview.length > 0 && (
             <div>
-              <h3 style={{ fontSize: 20 }}>Preview Import:</h3>
-              <ul style={{ paddingLeft: 20 }}>
+              <h3 style={previewHeadingStyle}>Preview Import:</h3>
+              <ul style={previewListStyle}>
                 {importPreview.map((row, index) => (
-                  <li key={index} style={{ marginBottom: 4 }}>{`${row.name} - ${row.quantity} @ ${row.location} (${row.date})`}</li>
+                  <li key={index} style={previewListItemStyle}>
+                    {`${row.Item} - ${row.Qty} @ ${row.Location} (${row.Date})`}
+                  </li>
                 ))}
               </ul>
-              <button onClick={handleConfirmImport} style={buttonStyle("#17a2b8")}>Confirm Import</button>
+              <button onClick={handleConfirmImport} style={buttonStyle("#17a2b8")}>
+                Confirm Import
+              </button>
             </div>
           )}
-
-          <button onClick={handleExport} style={buttonStyle("#343a40")}>📤 Export JSON</button>
+          <button onClick={handleExport} style={buttonStyle("#343a40")}>
+             Export JSON
+          </button>
         </div>
       </div>
     </div>
   );
-}
-
-const inputStyle = {
-  padding: "12px 16px",
-  fontSize: 14,
-  borderRadius: 8,
-  border: "1px solid #ccc",
-  width: "100%"
 };
 
-const buttonStyle = (bgColor) => ({
-  padding: "12px 20px",
-  backgroundColor: bgColor,
-  color: "white",
-  fontSize: 14,
-  border: "none",
-  borderRadius: 8,
-  cursor: "pointer"
-});
+// Styles
+const containerStyle = { padding: 32, fontFamily: "Arial, sans-serif", background: "#f9f9fb", minHeight: "100vh" };
+const cardStyle = { maxWidth: 800, margin: "0 auto", background: "#fff", padding: 32, borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" };
+const headingStyle = { fontSize: 32, fontWeight: 700, marginBottom: 24 };
+const formGridStyle = { display: "grid", gap: 12, gridTemplateColumns: "repeat(6, 1fr)" };
+const inputStyle = { padding: "12px 16px", fontSize: 14, borderRadius: 8, border: "1px solid #ccc", width: "100%" };
+const buttonContainerStyle = { marginTop: 16, display: "flex", justifyContent: "flex-end" };
+const buttonStyle = (bgColor) => ({ padding: "12px 20px", backgroundColor: bgColor, color: "white", fontSize: 14, border: "none", borderRadius: 8, cursor: "pointer" });
+const dividerStyle = { margin: "32px 0" };
+const importExportContainerStyle = { display: "flex", flexDirection: "column", gap: 16 };
+const previewHeadingStyle = { fontSize: 20 };
+const previewListStyle = { paddingLeft: 20 };
+const previewListItemStyle = { marginBottom: 4 };
+
+export default App;
