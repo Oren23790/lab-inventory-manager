@@ -20,17 +20,16 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const collectionRef = collection(db, "labInventory");
 
+const costCenterOptions = [
+  "HH", "Leibniz", "Maxima", "HH2", "DevCAR", "Spenden", "PW-EniBHK", "Mice"
+];
+
 const defaultFields = {
   name: "",
   quantity: "",
   location: "",
   date: new Date().toISOString().split("T")[0],
-  Leibniz: "",
-  Maxima: "",
-  HH2: "",
-  DevCAR: "",
-  Spenden: "",
-  "PW-EniBHK": "",
+  costCentre: "",
 };
 
 export default function App() {
@@ -88,12 +87,7 @@ export default function App() {
       quantity: row["Qty"] || row["Quantity"] || 1,
       location: row["Location"] || "",
       date: row["Date"] || new Date().toISOString().split("T")[0],
-      Leibniz: row["Leibniz"] || "",
-      Maxima: row["Maxima"] || "",
-      HH2: row["HH2"] || "",
-      DevCAR: row["DevCAR"] || "",
-      Spenden: row["Spenden"] || "",
-      "PW-EniBHK": row["PW-EniBHK"] || "",
+      costCentre: row["Cost centre"] || "",
     };
   };
 
@@ -140,12 +134,21 @@ export default function App() {
           {Object.entries(newEntry).map(([key, value]) => (
             <div key={key} style={{ display: "flex", flexDirection: "column" }}>
               <label style={{ marginBottom: 4, fontWeight: 500, color: "#555" }}>{key}</label>
-              <input
-                type={key === "date" ? "date" : key === "quantity" ? "number" : "text"}
-                value={value}
-                onChange={(e) => handleChange(key, e.target.value)}
-                style={inputStyle}
-              />
+              {key === "costCentre" ? (
+                <select value={value} onChange={(e) => handleChange(key, e.target.value)} style={inputStyle}>
+                  <option value="">Select cost centre</option>
+                  {costCenterOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={key === "date" ? "date" : key === "quantity" ? "number" : "text"}
+                  value={value}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                  style={inputStyle}
+                />
+              )}
             </div>
           ))}
         </div>
