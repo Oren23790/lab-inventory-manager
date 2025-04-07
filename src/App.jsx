@@ -192,6 +192,26 @@ export default function App() {
           )}
 
           <button onClick={handleExport} style={buttonStyle("#343a40")}>📤 Export JSON</button>
+
+        <h2 style={{ marginTop: "2rem", fontWeight: 600 }}>📦 Inventory List</h2>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem" }}>
+          <thead>
+            <tr style={{ backgroundColor: "#f0f0f0" }}>
+              {data[0] && Object.keys(data[0]).filter(k => k !== "id").map((key) => (
+                <th key={key} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "left" }}>{key}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((entry) => (
+              <tr key={entry.id}>
+                {Object.entries(entry).filter(([key]) => key !== "id").map(([key, val]) => (
+                  <td key={key} style={{ padding: "8px", border: "1px solid #ddd" }}>{String(val)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
         </div>
       </div>
     </div>
