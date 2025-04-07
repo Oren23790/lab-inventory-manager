@@ -26,6 +26,7 @@ const defaultFields = {
   name: "",
   quantity: "",
   location: "",
+  date: new Date().toISOString().split("T")[0],
 };
 
 export default function App() {
@@ -63,7 +64,7 @@ export default function App() {
     const snapshot = await getDocs(collectionRef);
     const entries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setData(entries);
-    setNewEntry(Object.fromEntries(Object.keys(newEntry).map((k) => [k, ""])));
+    setNewEntry({ ...defaultFields, date: new Date().toISOString().split("T")[0] });
     setEditId(null);
   };
 
@@ -82,6 +83,7 @@ export default function App() {
       name: row["Item"] || row["Name"] || row["Product"] || "Unnamed",
       quantity: row["Qty"] || row["Quantity"] || 1,
       location: row["Location"] || "",
+      date: row["Date"] || new Date().toISOString().split("T")[0],
     };
   };
 
@@ -120,30 +122,61 @@ export default function App() {
   };
 
   return (
-    <div style={{ padding: 32 }}>
-      <h1>🧪 Lab Inventory Manager (Firebase)</h1>
-      <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} style={{ marginBottom: 16 }} />
-      {importPreview.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <h3>Preview Import:</h3>
-          <ul>
-            {importPreview.map((row, index) => (
-              <li key={index}>{`${row.name} - ${row.quantity} @ ${row.location}`}</li>
-            ))}
-          </ul>
-          <button onClick={handleConfirmImport} style={buttonStyle("#28a745")}>Confirm Import</button>
+    <div style={{ padding: 32, fontFamily: "Arial, sans-serif", background: "#f9f9fb", minHeight: "100vh" }}>
+      <div style={{ maxWidth: 800, margin: "0 auto", background: "#fff", padding: 32, borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+        <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 24 }}>🧪 Lab Inventory Manager</h1>
+
+        <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
+          <input placeholder="Name" value={newEntry.name} onChange={(e) => handleChange("name", e.target.value)} style={inputStyle} />
+          <input placeholder="Quantity" type="number" value={newEntry.quantity} onChange={(e) => handleChange("quantity", e.target.value)} style={inputStyle} />
+          <input placeholder="Location" value={newEntry.location} onChange={(e) => handleChange("location", e.target.value)} style={inputStyle} />
+          <input type="date" value={newEntry.date} onChange={(e) => handleChange("date", e.target.value)} style={inputStyle} />
         </div>
-      )}
-      <button onClick={handleExport}>Export JSON</button>
-      {/* Add buttons and tables here... */}
+
+        <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
+          <button onClick={handleAdd} style={buttonStyle("#28a745")}>
+            {editId ? "✅ Update Entry" : "➕ Add Entry"}
+          </button>
+        </div>
+
+        <hr style={{ margin: "32px 0" }} />
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} style={inputStyle} />
+
+          {importPreview.length > 0 && (
+            <div>
+              <h3 style={{ fontSize: 20 }}>Preview Import:</h3>
+              <ul style={{ paddingLeft: 20 }}>
+                {importPreview.map((row, index) => (
+                  <li key={index} style={{ marginBottom: 4 }}>{`${row.name} - ${row.quantity} @ ${row.location} (${row.date})`}</li>
+                ))}
+              </ul>
+              <button onClick={handleConfirmImport} style={buttonStyle("#17a2b8")}>Confirm Import</button>
+            </div>
+          )}
+
+          <button onClick={handleExport} style={buttonStyle("#343a40")}>📤 Export JSON</button>
+        </div>
+      </div>
     </div>
   );
 }
 
+const inputStyle = {
+  padding: "12px 16px",
+  fontSize: 14,
+  borderRadius: 8,
+  border: "1px solid #ccc",
+  width: "100%"
+};
+
 const buttonStyle = (bgColor) => ({
-  padding: "10px 16px",
+  padding: "12px 20px",
   backgroundColor: bgColor,
   color: "white",
+  fontSize: 14,
   border: "none",
-  borderRadius: 6,
+  borderRadius: 8,
+  cursor: "pointer"
 });
