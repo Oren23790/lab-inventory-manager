@@ -210,23 +210,30 @@ export default function App() {
   // Export purchases to Excel
   const handleExport = () => {
     try {
-      // Create worksheet from purchases data
       const ws = XLSX.utils.json_to_sheet(
         purchases.map(({ id, ...data }) => data)
       );
       
-      
-      const handleDownloadTemplate = () => {
-        try {
-          const ws = XLSX.utils.json_to_sheet(excelTemplate);
-          const wb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(wb, ws, "Template");
-          XLSX.writeFile(wb, "purchase_import_template.xlsx");
-        } catch (error) {
-          console.error("Error downloading template:", error);
-          alert("Failed to download template");
-        }
-      };   
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Purchases");
+      XLSX.writeFile(wb, "purchases_export.xlsx");
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      alert("Failed to export data");
+    }
+  };
+  
+  const handleDownloadTemplate = () => {
+    try {
+      const ws = XLSX.utils.json_to_sheet(excelTemplate);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Template");
+      XLSX.writeFile(wb, "purchase_import_template.xlsx");
+    } catch (error) {
+      console.error("Error downloading template:", error);
+      alert("Failed to download template");
+    }
+  }; 
 
   // Format currency value
   const formatCurrency = (value) => {
