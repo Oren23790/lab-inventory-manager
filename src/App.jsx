@@ -1,5 +1,3 @@
-// ... the beginning of your code remains unchanged
-
 import { useEffect, useState } from "react";
 import saveAs from "file-saver";
 import * as XLSX from "xlsx";
@@ -134,43 +132,41 @@ export default function App() {
   };
 
   return (
-    <div style={{ padding: 32, fontFamily: "Arial, sans-serif", background: "#f9f9fb", minHeight: "100vh" }}>
-      <div style={{ maxWidth: 800, margin: "0 auto", background: "#fff", padding: 32, borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-        <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 24 }}>🧪 Lab Inventory Manager</h1>
+    <div style={{ padding: "3rem", background: "#f0f2f5", fontFamily: "Inter, sans-serif" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", background: "white", padding: "2rem", borderRadius: "1rem", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+        <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "1.5rem", color: "#333" }}>🧪 Lab Inventory Manager</h1>
 
-        <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
+        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginBottom: "1.5rem" }}>
           {Object.entries(newEntry).map(([key, value]) => (
-            <input
-              key={key}
-              placeholder={key}
-              type={key === "date" ? "date" : key === "quantity" ? "number" : "text"}
-              value={value}
-              onChange={(e) => handleChange(key, e.target.value)}
-              style={inputStyle}
-            />
+            <div key={key} style={{ display: "flex", flexDirection: "column" }}>
+              <label style={{ marginBottom: 4, fontWeight: 500, color: "#555" }}>{key}</label>
+              <input
+                type={key === "date" ? "date" : key === "quantity" ? "number" : "text"}
+                value={value}
+                onChange={(e) => handleChange(key, e.target.value)}
+                style={inputStyle}
+              />
+            </div>
           ))}
         </div>
 
-        <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={handleAdd} style={buttonStyle("#28a745")}>
-            {editId ? "✅ Update Entry" : "➕ Add Entry"}
-          </button>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "2rem" }}>
+          <button onClick={handleAdd} style={buttonStyle("#28a745")}>{editId ? "✅ Update Entry" : "➕ Add Entry"}</button>
         </div>
 
-        <hr style={{ margin: "32px 0" }} />
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} style={inputStyle} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <label style={{ fontWeight: 600 }}>📥 Import Purchases (.xlsx):</label>
+          <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} style={{ ...inputStyle, padding: "10px" }} />
 
           {importPreview.length > 0 && (
             <div>
-              <h3 style={{ fontSize: 20 }}>Preview Import:</h3>
-              <ul style={{ paddingLeft: 20 }}>
+              <h3 style={{ fontSize: "1.25rem", margin: "1rem 0" }}>📝 Preview Import:</h3>
+              <ul style={{ listStyle: "disc", paddingLeft: "1.25rem" }}>
                 {importPreview.map((row, index) => (
-                  <li key={index} style={{ marginBottom: 4 }}>{`${row.name} - ${row.quantity} @ ${row.location} (${row.date})`}</li>
+                  <li key={index}>{`${row.name} - ${row.quantity} @ ${row.location} (${row.date})`}</li>
                 ))}
               </ul>
-              <button onClick={handleConfirmImport} style={buttonStyle("#17a2b8")}>Confirm Import</button>
+              <button onClick={handleConfirmImport} style={buttonStyle("#17a2b8")}>✅ Confirm Import</button>
             </div>
           )}
 
@@ -182,19 +178,22 @@ export default function App() {
 }
 
 const inputStyle = {
-  padding: "12px 16px",
-  fontSize: 14,
-  borderRadius: 8,
+  padding: "10px 14px",
+  fontSize: "14px",
+  borderRadius: "8px",
   border: "1px solid #ccc",
-  width: "100%"
+  backgroundColor: "#fff",
+  outline: "none"
 };
 
 const buttonStyle = (bgColor) => ({
-  padding: "12px 20px",
+  padding: "10px 16px",
   backgroundColor: bgColor,
   color: "white",
-  fontSize: 14,
+  fontWeight: 600,
+  fontSize: "14px",
   border: "none",
-  borderRadius: 8,
-  cursor: "pointer"
+  borderRadius: "8px",
+  cursor: "pointer",
+  transition: "background 0.2s ease"
 });
