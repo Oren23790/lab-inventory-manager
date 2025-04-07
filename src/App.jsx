@@ -98,20 +98,32 @@ export default function App() {
   };
 
   const handleImportExcel = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
-      const bstr = evt.target.result;
-      const wb = XLSX.read(bstr, { type: "binary" });
-      const wsname = wb.SheetNames[0];
-      const ws = wb.Sheets[wsname];
-      const rawData = XLSX.utils.sheet_to_json(ws);
-      const filtered = rawData.filter(row => row["Item"] || row["Name"]);
-      const mappedData = filtered.map(mapColumns);
-      setImportPreview(mappedData);
-    };
-    reader.readAsBinaryString(file);
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    const bstr = evt.target.result;
+    const wb = XLSX.read(bstr, { type: "binary" });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    const rawData = XLSX.utils.sheet_to_json(ws);
+    const filtered = rawData.filter(row => row["Item"] || row["Name"]);
+    const mappedData = filtered.map(mapColumns);
+
+    // Immediately insert all entries into Firestore
+    for (const row of mappedData) {
+      await addDoc(collectionRef, row);
+    }
+
+    alert("✅ All entries imported and saved to Firebase!");
+
+    // Refresh local state
+    const snapshot = await getDocs(collectionRef);
+    const entries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    setData(entries);
+    setImportPreview([]);
+  };
+  reader.readAsBinaryString(file);
   };
 
   const handleConfirmImport = async () => {
