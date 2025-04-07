@@ -69,7 +69,13 @@ export default function App() {
     const snapshot = await getDocs(collectionRef);
     const entries = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setData(entries);
-    setNewEntry({ ...defaultFields, date: new Date().toISOString().split("T")[0] });
+    setNewEntry({
+  name: "",
+  quantity: "",
+  location: "",
+  date: newEntry.date,
+  costCentre: ""
+});
     setEditId(null);
   };
 
