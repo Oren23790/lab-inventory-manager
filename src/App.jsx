@@ -174,7 +174,7 @@ export default function App() {
           orderedBy: row["Ordered By"] || "",
           costCentre: row["Cost centre"] || "",
           offerNr: row["Offer nr."] || "",
-          prNr: row["Nr."] || row["PR#"] || "",
+          prNr: row["PR#"] || "",
           category: row["Category"] || "",
           vendor: row["Vendor"] || "",
           item: row["Item"] || "",
